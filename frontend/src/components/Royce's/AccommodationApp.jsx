@@ -8,7 +8,7 @@ import {
   Home,
   Settings,
   Wifi,
-  Car,
+  Car, //post
   Droplets,
   Bed,
   ChevronLeft,
