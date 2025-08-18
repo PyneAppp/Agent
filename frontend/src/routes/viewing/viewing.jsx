@@ -28,7 +28,7 @@ function ViewingForm({ onAdd, accommodations }) {
       });
     } catch (err) {
       alert(
-        "Error adding viewing: " + err?.response?.data?.message ?? err.message
+        "Error adding viewing: " + (err?.response?.data?.message || err.message)
       );
     }
   };

@@ -39,19 +39,36 @@ const Chatbot = () => {
       "I'd be happy to help you find accommodation! You can ask me about prices, locations, room numbers, amenities, or the booking process.",
   };
 
-  const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
+  const getBotResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const response = await fetch('http://localhost:5000/openrouter/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: userMessage }),
+      });
 
-    for (const [key, response] of Object.entries(predefinedResponses)) {
-      if (key !== "default" && lowerMessage.includes(key)) {
-        return response;
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
       }
-    }
 
-    return predefinedResponses.default;
+      const data = await response.json();
+      return data.reply || "I'm sorry, I couldn't process your request right now.";
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      // Fallback to predefined responses
+      const lowerMessage = userMessage.toLowerCase();
+      for (const [key, response] of Object.entries(predefinedResponses)) {
+        if (key !== "default" && lowerMessage.includes(key)) {
+          return response;
+        }
+      }
+      return predefinedResponses.default;
+    }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
     const userMessage: Message = {
@@ -61,20 +78,41 @@ const Chatbot = () => {
       timestamp: new Date(),
     };
 
+    const currentInputText = inputText;
     setMessages((prev) => [...prev, userMessage]);
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: getBotResponse(inputText),
-        isBot: true,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
-
     setInputText("");
+
+    // Add loading message
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: "Thinking...",
+      isBot: true,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, loadingMessage]);
+
+    // Get AI response
+    try {
+      const responseText = await getBotResponse(currentInputText);
+      
+      // Replace loading message with actual response
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === loadingMessage.id 
+            ? { ...msg, text: responseText }
+            : msg
+        )
+      );
+    } catch (error) {
+      // Replace loading message with error message
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === loadingMessage.id 
+            ? { ...msg, text: "I'm sorry, I encountered an error. Please try again." }
+            : msg
+        )
+      );
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

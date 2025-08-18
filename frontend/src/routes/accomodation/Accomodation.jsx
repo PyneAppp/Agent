@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  Edit2, 
+  Trash2, 
+  Home as HomeIcon, 
+  MapPin, 
+  DollarSign,
+  Bed,
+  User,
+  Eye,
+  X,
+  Loader
+} from "lucide-react";
+import { useAdmin } from "../../context/AdminContext";
+import "./Accomodation.scss";
 
 const API_URL = import.meta.env.VITE_BHEKINA2;
-console.log(API_URL);
 
 const emptyForm = {
   residence_id: "",
@@ -26,11 +42,19 @@ const emptyForm = {
 
 function AccommodationApp() {
   const [accommodations, setAccommodations] = useState([]);
+  const [filteredAccommodations, setFilteredAccommodations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
 
   useEffect(() => {
     fetchAccommodations();
@@ -144,226 +168,485 @@ function AccommodationApp() {
     setError(null);
   };
 
-  if (loading) return <p>Loading accommodations...</p>;
-  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
+  // Filter and search functionality
+  useEffect(() => {
+    let filtered = accommodations;
+    
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(acc => 
+        acc.residence_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        acc.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        acc.residence_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        acc.owner?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Type filter
+    if (filterType) {
+      filtered = filtered.filter(acc => acc.residence_type === filterType);
+    }
+    
+    // Location filter
+    if (filterLocation) {
+      filtered = filtered.filter(acc => acc.location === filterLocation);
+    }
+    
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.rentals - b.rentals;
+        case 'price-high':
+          return b.rentals - a.rentals;
+        case 'rooms':
+          return b.rooms - a.rooms;
+        case 'newest':
+        default:
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      }
+    });
+    
+    setFilteredAccommodations(filtered);
+  }, [accommodations, searchTerm, filterType, filterLocation, sortBy]);
+
+  const openModal = (accommodation = null) => {
+    if (accommodation) {
+      handleEdit(accommodation);
+    } else {
+      setForm(emptyForm);
+      setEditingId(null);
+    }
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setForm(emptyForm);
+    setEditingId(null);
+    setError(null);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    await handleSubmit(e);
+    if (!error) {
+      closeModal();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="accommodations-page">
+        <div className="loading-container">
+          <Loader className="loading-spinner" />
+          <p>Loading accommodations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="accommodations-page">
+        <div className="error-container">
+          <p className="error-message">Error: {error}</p>
+          <button onClick={fetchAccommodations} className="btn btn-primary">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        maxWidth: 1000,
-        margin: "auto",
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <h1>Accommodations</h1>
-
-      <form onSubmit={handleSubmit} style={{ marginBottom: 40 }}>
-        <h2>{editingId ? "Edit Accommodation" : "Add New Accommodation"}</h2>
-
-        {/* Text Inputs */}
-        {[
-          {
-            label: "Residence ID",
-            name: "residence_id",
-            type: "text",
-            required: true,
-          },
-          {
-            label: "Residence Type",
-            name: "residence_type",
-            type: "text",
-            required: true,
-          },
-          { label: "Location", name: "location", type: "text", required: true },
-          { label: "Owner", name: "owner" },
-          { label: "Owner Email", name: "owner_email", type: "email" },
-          { label: "Owner Phone", name: "owner_phone" },
-          { label: "Owner Address", name: "owner_address" },
-          { label: "Owner ID", name: "owner_id" },
-          { label: "Image 1 URL", name: "image1" },
-          { label: "Image 2 URL", name: "image2" },
-          { label: "Image 3 URL", name: "image3" },
-          { label: "Image 4 URL", name: "image4" },
-          { label: "Image 5 URL", name: "image5" },
-          { label: "Image 6 URL", name: "image6" },
-        ].map(({ label, name, type = "text", required }) => (
-          <div key={name} style={{ marginBottom: 10 }}>
-            <label
-              htmlFor={name}
-              style={{ display: "block", fontWeight: "bold", marginBottom: 4 }}
-            >
-              {label} {required && "*"}
-            </label>
-            <input
-              id={name}
-              name={name}
-              type={type}
-              value={form[name]}
-              onChange={handleChange}
-              required={!!required}
-              style={{
-                width: "100%",
-                padding: 8,
-                borderRadius: 4,
-                border: "1px solid #ccc",
-              }}
-            />
+    <div className="accommodations-page">
+      <div className="container">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="page-title-section">
+            <h1 className="page-title">
+              <HomeIcon className="title-icon" />
+              Accommodations Management
+            </h1>
+            <p className="page-subtitle">
+              Manage your property listings, view details, and track bookings
+            </p>
           </div>
-        ))}
-
-        {/* Textarea */}
-        <div style={{ marginBottom: 10 }}>
-          <label
-            htmlFor="description"
-            style={{ display: "block", fontWeight: "bold", marginBottom: 4 }}
+          <button 
+            onClick={() => openModal()} 
+            className="btn btn-primary btn-add"
           >
-            Description *
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={4}
-            required
-            style={{
-              width: "100%",
-              padding: 8,
-              borderRadius: 4,
-              border: "1px solid #ccc",
-            }}
-          />
-        </div>
-
-        {/* Number Inputs */}
-        {[
-          { label: "Rentals", name: "rentals" },
-          { label: "Deposit", name: "deposit" },
-          { label: "Rooms", name: "rooms" },
-        ].map(({ label, name }) => (
-          <div key={name} style={{ marginBottom: 10 }}>
-            <label
-              htmlFor={name}
-              style={{ display: "block", fontWeight: "bold", marginBottom: 4 }}
-            >
-              {label} *
-            </label>
-            <input
-              id={name}
-              name={name}
-              type="number"
-              value={form[name]}
-              onChange={handleChange}
-              required
-              min={0}
-              style={{
-                width: "100%",
-                padding: 8,
-                borderRadius: 4,
-                border: "1px solid #ccc",
-              }}
-            />
-          </div>
-        ))}
-
-        <div style={{ marginTop: 20 }}>
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: 5,
-              cursor: "pointer",
-              fontWeight: "bold",
-              marginRight: 10,
-            }}
-          >
-            {editingId ? "Update" : "Add"}
+            <Plus size={20} />
+            Add New Property
           </button>
-
-          {editingId && (
-            <button
-              type="button"
-              onClick={handleCancel}
-              style={{
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: 5,
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
-          )}
         </div>
-      </form>
 
-      <h2>Accommodation List</h2>
-      {accommodations.length === 0 ? (
-        <p>No accommodations available.</p>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }} border={1}>
-          <thead style={{ backgroundColor: "#007bff", color: "white" }}>
-            <tr>
-              <th style={{ padding: 8 }}>Residence ID</th>
-              <th style={{ padding: 8 }}>Residence Type</th>
-              <th style={{ padding: 8 }}>Location</th>
-              <th style={{ padding: 8 }}>Rentals</th>
-              <th style={{ padding: 8 }}>Deposit</th>
-              <th style={{ padding: 8 }}>Rooms</th>
-              <th style={{ padding: 8 }}>Owner</th>
-              <th style={{ padding: 8 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {accommodations.map((acc) => (
-              <tr key={acc._id}>
-                <td style={{ padding: 8 }}>{acc.residence_id}</td>
-                <td style={{ padding: 8 }}>{acc.residence_type}</td>
-                <td style={{ padding: 8 }}>{acc.location}</td>
-                <td style={{ padding: 8 }}>{acc.rentals}</td>
-                <td style={{ padding: 8 }}>{acc.deposit}</td>
-                <td style={{ padding: 8 }}>{acc.rooms}</td>
-                <td style={{ padding: 8 }}>{acc.owner}</td>
-                <td style={{ padding: 8 }}>
-                  <button
-                    onClick={() => handleEdit(acc)}
-                    style={{
-                      marginRight: 8,
-                      cursor: "pointer",
-                      padding: "6px 12px",
-                      backgroundColor: "#28a745",
-                      border: "none",
-                      borderRadius: 4,
-                      color: "white",
+        {/* Search and Filter Section */}
+        <div className="search-filter-section">
+          <div className="search-bar">
+            <Search className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, location, type, or owner..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          
+          <div className="filters">
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Cottage">Cottage</option>
+              <option value="Townhouse">Townhouse</option>
+            </select>
+            
+            <select 
+              value={filterLocation} 
+              onChange={(e) => setFilterLocation(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Locations</option>
+              <option value="Chitungwiza Unit A">Unit A</option>
+              <option value="Chitungwiza Unit B">Unit B</option>
+              <option value="Chitungwiza Unit C">Unit C</option>
+              <option value="Chitungwiza Unit L">Unit L</option>
+            </select>
+            
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+              className="filter-select"
+            >
+              <option value="newest">Newest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="rooms">Most Rooms</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div className="results-header">
+          <h2 className="results-title">
+            Property Listings 
+            <span className="results-count">({filteredAccommodations.length})</span>
+          </h2>
+        </div>
+
+        {/* Accommodations Grid */}
+        {filteredAccommodations.length === 0 ? (
+          <div className="empty-state">
+            <HomeIcon size={48} className="empty-icon" />
+            <h3>No accommodations found</h3>
+            <p>Try adjusting your search criteria or add a new property.</p>
+            <button 
+              onClick={() => openModal()} 
+              className="btn btn-primary"
+            >
+              <Plus size={20} />
+              Add New Property
+            </button>
+          </div>
+        ) : (
+          <div className="accommodations-grid">
+            {filteredAccommodations.map((acc) => (
+              <div key={acc._id} className="accommodation-card">
+                {/* Card Image */}
+                <div className="card-image">
+                  <img
+                    src={acc.image1 || 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1'}
+                    alt={`${acc.residence_type} in ${acc.location}`}
+                    onError={(e) => {
+                      e.target.src = 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
                     }}
+                  />
+                  <div className="card-badge">{acc.residence_type}</div>
+                </div>
+                
+                {/* Card Content */}
+                <div className="card-content">
+                  <div className="card-header">
+                    <h3 className="card-title">{acc.residence_id}</h3>
+                    <div className="card-price">
+                      <DollarSign size={16} />
+                      {acc.rentals}/month
+                    </div>
+                  </div>
+                  
+                  <div className="card-location">
+                    <MapPin size={16} />
+                    <span>{acc.location}</span>
+                  </div>
+                  
+                  <div className="card-details">
+                    <div className="detail-item">
+                      <Bed size={16} />
+                      <span>{acc.rooms} Rooms</span>
+                    </div>
+                    <div className="detail-item">
+                      <User size={16} />
+                      <span>{acc.owner || 'No Owner'}</span>
+                    </div>
+                    <div className="detail-item deposit">
+                      <span>Deposit: ${acc.deposit}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="card-description">
+                    <p>{acc.description?.substring(0, 100)}{acc.description?.length > 100 ? '...' : ''}</p>
+                  </div>
+                </div>
+                
+                {/* Card Actions */}
+                <div className="card-actions">
+                  <button 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => openModal(acc)}
                   >
+                    <Edit2 size={16} />
                     Edit
                   </button>
-                  <button
+                  <button 
+                    className="btn btn-danger btn-sm"
                     onClick={() => handleDelete(acc._id)}
-                    style={{
-                      cursor: "pointer",
-                      padding: "6px 12px",
-                      backgroundColor: "#dc3545",
-                      border: "none",
-                      borderRadius: 4,
-                      color: "white",
-                    }}
                   >
+                    <Trash2 size={16} />
                     Delete
                   </button>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="modal-overlay" onClick={closeModal}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2 className="modal-title">
+                  {editingId ? 'Edit Accommodation' : 'Add New Accommodation'}
+                </h2>
+                <button onClick={closeModal} className="modal-close">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleFormSubmit} className="modal-form">
+                {error && (
+                  <div className="error-banner">
+                    <p>{error}</p>
+                  </div>
+                )}
+                
+                {/* Basic Information */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Basic Information</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Residence ID *</label>
+                      <input
+                        name="residence_id"
+                        type="text"
+                        value={form.residence_id}
+                        onChange={handleChange}
+                        required
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Property Type *</label>
+                      <select
+                        name="residence_type"
+                        value={form.residence_type}
+                        onChange={handleChange}
+                        required
+                        className="form-select"
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="House">House</option>
+                        <option value="Cottage">Cottage</option>
+                        <option value="Townhouse">Townhouse</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Location *</label>
+                      <select
+                        name="location"
+                        value={form.location}
+                        onChange={handleChange}
+                        required
+                        className="form-select"
+                      >
+                        <option value="">Select Location</option>
+                        <option value="Chitungwiza Unit A">Chitungwiza Unit A</option>
+                        <option value="Chitungwiza Unit B">Chitungwiza Unit B</option>
+                        <option value="Chitungwiza Unit C">Chitungwiza Unit C</option>
+                        <option value="Chitungwiza Unit L">Chitungwiza Unit L</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Number of Rooms *</label>
+                      <input
+                        name="rooms"
+                        type="number"
+                        value={form.rooms}
+                        onChange={handleChange}
+                        required
+                        min="1"
+                        max="10"
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Pricing */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Pricing</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Monthly Rent ($) *</label>
+                      <input
+                        name="rentals"
+                        type="number"
+                        value={form.rentals}
+                        onChange={handleChange}
+                        required
+                        min="0"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Security Deposit ($) *</label>
+                      <input
+                        name="deposit"
+                        type="number"
+                        value={form.deposit}
+                        onChange={handleChange}
+                        required
+                        min="0"
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Description */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Description</h3>
+                  <div className="form-group form-group-full">
+                    <textarea
+                      name="description"
+                      value={form.description}
+                      onChange={handleChange}
+                      rows={4}
+                      placeholder="Describe the property features, amenities, etc."
+                      className="form-textarea"
+                    />
+                  </div>
+                </div>
+                
+                {/* Owner Information */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Owner Information</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Owner Name</label>
+                      <input
+                        name="owner"
+                        type="text"
+                        value={form.owner}
+                        onChange={handleChange}
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Owner Email</label>
+                      <input
+                        name="owner_email"
+                        type="email"
+                        value={form.owner_email}
+                        onChange={handleChange}
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Owner Phone</label>
+                      <input
+                        name="owner_phone"
+                        type="tel"
+                        value={form.owner_phone}
+                        onChange={handleChange}
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Owner ID</label>
+                      <input
+                        name="owner_id"
+                        type="text"
+                        value={form.owner_id}
+                        onChange={handleChange}
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group form-group-full">
+                    <label>Owner Address</label>
+                    <textarea
+                      name="owner_address"
+                      value={form.owner_address}
+                      onChange={handleChange}
+                      rows={2}
+                      className="form-textarea"
+                    />
+                  </div>
+                </div>
+                
+                {/* Images */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Property Images</h3>
+                  <div className="form-grid">
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <div key={num} className="form-group">
+                        <label>Image {num} URL</label>
+                        <input
+                          name={`image${num}`}
+                          type="url"
+                          value={form[`image${num}`]}
+                          onChange={handleChange}
+                          placeholder="https://example.com/image.jpg"
+                          className="form-input"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Modal Actions */}
+                <div className="modal-actions">
+                  <button type="button" onClick={closeModal} className="btn btn-secondary">
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    {editingId ? 'Update Property' : 'Add Property'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

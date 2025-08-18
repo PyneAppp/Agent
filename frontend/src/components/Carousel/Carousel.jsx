@@ -5,83 +5,97 @@ import {
   Scrollbar,
   A11y,
   Autoplay,
+  EffectFade
 } from "swiper/modules";
+import { Search, MapPin, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import "swiper/css";
-
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/scrollbar";
+import "swiper/css/effect-fade";
+import "./Carousel.scss";
 
-export default () => {
+const heroSlides = [
+  {
+    id: 1,
+    title: "Find Your Perfect Home",
+    subtitle: "Discover comfortable and affordable accommodations in Chitungwiza",
+    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=600&fit=crop&crop=center",
+    cta: "Browse Homes",
+    route: "/accomodation"
+  },
+  {
+    id: 2,
+    title: "Modern Amenities Included",
+    subtitle: "Wi-Fi, parking, and borehole water in all our properties",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=600&fit=crop&crop=center",
+    cta: "View Amenities",
+    route: "/accomodation"
+  },
+  {
+    id: 3,
+    title: "Professional Service",
+    subtitle: "Expert property management and maintenance services",
+    image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200&h=600&fit=crop&crop=center",
+    cta: "Learn More",
+    route: "/hire"
+  }
+];
+
+export default function HeroCarousel() {
+  const navigate = useNavigate();
+  
+  const handleButtonClick = (route) => {
+    navigate(route);
+  };
   return (
-    <Swiper
-      style={{ overflow: "visible" }}
-      modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
-      pagination={{ clickable: true }}
-      autoplay={{ delay: 5000 }}
-      spaceBetween={50}
-      slidesPerView={1}
-      loops={true}
-      onSlideChange={() => console.log("slide change")}
-      onSwiper={(swiper) => console.log(swiper)}
-    >
-      <SwiperSlide
-        style={{
-          display: "flex",
-
-          boxShadow: "3px 3px 3px black",
-          justifyContent: "center",
-          width: "100%",
-          height: "300px",
-          borderRadius: "10px",
-          backgroundColor: "green",
-          gap: "500px",
+    <div className="hero-carousel-container">
+      <Swiper
+        modules={[Navigation, Pagination, A11y, Autoplay, EffectFade]}
+        effect="fade"
+        navigation={true}
+        pagination={{ 
+          clickable: true,
+          bulletClass: 'hero-pagination-bullet',
+          bulletActiveClass: 'hero-pagination-bullet-active'
         }}
-      >
-        <h1 style={{ color: "black", paddingLeft: "40px" }}>Rent houses</h1>
-        <img
-          src="https://tse3.mm.bing.net/th/id/OIP.t9cp_It1qJHKHLE2ak9MhgHaE7?rs=1&pid=ImgDetMain&o=7&rm=3"
-          style={{ width: "48%", borderRadius: "10px", height: "99%" }}
-        />
-      </SwiperSlide>
-      <SwiperSlide
-        style={{
-          marginTop: "5px",
-          display: "flex",
-          borderRadius: "20px",
-          justifyContent: "center",
-          width: "100%",
-          height: "300px",
-          backgroundColor: "yellow",
+        autoplay={{ 
+          delay: 6000,
+          disableOnInteraction: false
         }}
+        loop={true}
+        className="hero-swiper"
       >
-        Slide 2
-      </SwiperSlide>
-      <SwiperSlide
-        style={{
-          display: "flex",
-          borderRadius: "10px",
-          justifyContent: "center",
-          width: "100%",
-          height: "300px",
-          backgroundColor: "blue",
-        }}
-      >
-        Slide 3
-      </SwiperSlide>
-      <SwiperSlide
-        style={{
-          display: "flex",
-          borderRadius: "10px",
-          justifyContent: "center",
-          width: "100%",
-          height: "300px",
-          backgroundColor: "grey",
-        }}
-      >
-        Slide 4
-      </SwiperSlide>
-    </Swiper>
+        {heroSlides.map((slide) => (
+          <SwiperSlide key={slide.id} className="hero-slide">
+            <div className="hero-slide-content">
+              {/* Background Image */}
+              <div 
+                className="hero-background"
+                style={{ backgroundImage: `url(${slide.image})` }}
+              />
+              {/* Overlay */}
+              <div className="hero-overlay" />
+              
+              {/* Content */}
+              <div className="hero-content">
+                <div className="hero-text">
+                  <h1 className="hero-title">{slide.title}</h1>
+                  <p className="hero-subtitle">{slide.subtitle}</p>
+                  <button 
+                    className="hero-cta-button"
+                    onClick={() => handleButtonClick(slide.route)}
+                  >
+                    {slide.cta}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
   );
-};
+}

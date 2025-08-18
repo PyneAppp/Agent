@@ -2,27 +2,33 @@ import { useState } from "react";
 import Professionals from "./routes/professionals/Professionals";
 import Accommodation from "./routes/accomodation/Accomodation";
 import View from "./routes/viewing/viewing";
+import Hire from "./routes/hire/Hire";
+import Jobs from "./routes/jobs/Jobs";
 import { Routes, Route } from "react-router-dom";
 import NavBar from "./routes/navBar/NavBar";
 import Home from "./routes/Home/Home";
+import { AdminProvider } from "./context/AdminContext";
 import "./index.css";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
+    <AdminProvider>
       <div className="app">
         <NavBar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/accomodation" element={<Accommodation />} />
           <Route path="/professionals" element={<Professionals />} />
+          <Route path="/viewing" element={<View />} />
+          <Route path="/hire" element={<Hire />} />
+          <Route path="/jobs" element={<Jobs />} />
         </Routes>
         {/*<Professionals />*/}
         {/*<Accommodation />*/}
       </div>
-    </>
+    </AdminProvider>
   );
 }
 
