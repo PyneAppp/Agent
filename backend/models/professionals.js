@@ -16,6 +16,6 @@ const professionalSchema = new mongoose.Schema({
   skills: { type: String, required: true },
   profession: { type: String, required: true },
   bio: { type: String, required: true },
-});
+}, { timestamps: true });
 
 export default mongoose.model("Professional", professionalSchema);
