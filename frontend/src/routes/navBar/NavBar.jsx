@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Shield, LogOut, User } from "lucide-react";
 import { useAdmin } from "../../context/AdminContext";
 import AdminLogin from "../../components/Admin/AdminLogin";
+import ProfessionalsRegistration from "../../components/ProfessionalsRegistration/professionalsRegistration";
 import UserLogin from "../../components/Auth/UserLogin";
 import AccommodationApp from "../accomodation/Accomodation";
 

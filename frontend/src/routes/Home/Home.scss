@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);*/
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   
   &:hover {
@@ -161,8 +161,8 @@
 
 // Features Section
 .features-section {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 1rem 0;
+  background: white;
 }
 
 .features-grid {
