@@ -5,6 +5,7 @@ import Chatbot from "../../components/chatBot/Chatbot";
 import Card from "../../components/Cards/Card";
 import AccommodationApp from "../../components/Royce's/AccommodationApp";
 import { TrendingUp, Users, Shield, Clock, Star, ArrowRight } from "lucide-react";
+import NavBar from "../../routes/navBar/NavBar";
 
 export default function Home() {
   const [searchFilters, setSearchFilters] = useState({
@@ -73,6 +74,10 @@ export default function Home() {
 
   return (
     <div className="home">
+      {/*Navbar Section*/}
+      <section className="navbar-section">
+        <NavBar />
+      </section>
       {/* Hero Section with Carousel */}
       <section className="hero-section">
         <HeroCarousel />
