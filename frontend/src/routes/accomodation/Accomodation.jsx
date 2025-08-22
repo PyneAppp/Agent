@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAdmin } from "../../context/AdminContext";
 import "./Accomodation.scss";
+import NavBar from '../../routes/navBar/NavBar'
 
 const API_URL = import.meta.env.VITE_BHEKINA2;
 
@@ -262,6 +263,10 @@ function AccommodationApp() {
   return (
     <div className="accommodations-page">
       <div className="container">
+        {/*NavBar section*/}
+        <section className="Navbar-section">
+          <NavBar />
+        </section>
         {/* Page Header */}
         <div className="page-header">
           <div className="page-title-section">

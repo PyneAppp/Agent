@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import "./Jobs.scss";
+import NavBar from '../../routes/navBar/NavBar'
 
 // Mock data for job opportunities
 const mockJobs = [
@@ -285,6 +286,10 @@ export default function Jobs() {
   return (
     <div className="jobs-page">
       <div className="container">
+        {/*NavBar-section*/}
+        <section className="NavBar-section">
+          <NavBar/>
+        </section>
         {/* Hero Section */}
         <div className="hero-section">
           <div className="hero-content">

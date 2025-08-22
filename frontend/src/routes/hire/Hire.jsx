@@ -14,6 +14,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import "./Hire.scss";
+import NavBar from '../../routes/navBar/NavBar'
 
 // Mock data for service providers (in real app, this would come from API)
 const mockServiceProviders = [
@@ -117,7 +118,9 @@ const ServiceProviderCard = ({ provider }) => {
   };
 
   return (
+    
     <div className="service-provider-card">
+     
       <div className="provider-header">
         <div className="provider-avatar">
           <img src={provider.avatar} alt={provider.name} />
@@ -240,6 +243,10 @@ export default function Hire() {
   return (
     <div className="hire-page">
       <div className="container">
+      {/*NavBar-section*/}
+      <section className="NavBar-section">
+        <NavBar/>
+      </section>
         {/* Hero Section */}
         <div className="hero-section">
           <div className="hero-content">
