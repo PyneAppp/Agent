@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 import accommodationRoutes from "./routes/accommodation.js";
 import professionalRoutes from "./routes/professionals.js";
 import viewingRoutes from "./routes/viewing.js";
-import openRouterRoutes from "./routes/openRouterRoutes.js"; // ✅ updated
+import openRouterRoutes from "./routes/openRouterRoutes.js"; 
 
 dotenv.config();
 

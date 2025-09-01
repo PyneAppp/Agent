@@ -8,6 +8,7 @@ import Dashboard from "./routes/admin/dashboard";
 import { Routes, Route } from "react-router-dom";
 import Home from "./routes/Home/Home";
 import { AdminProvider } from "./context/AdminContext";
+import AdimAccomodation from "./routes/AdminAccomodation/AdminAccomodation";
 import "./index.css";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/accomodation" element={<Accommodation />} />
           <Route path="/professionals" element={<Professionals />} />
+          <Route path="/adminaccomodation" element={<AdimAccomodation />} />
           <Route path="/viewing" element={<View />} />
           <Route path="/hire" element={<Hire />} />
           <Route path="/jobs" element={<Jobs />} />
